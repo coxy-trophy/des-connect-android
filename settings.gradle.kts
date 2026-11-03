@@ -1,3 +1,4 @@
+// DES Connect modification, 2026-11-03: independent app identity and branding.
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -29,4 +30,4 @@ buildscript {
     }
 }
 
-rootProject.name = "kdeconnect-android"
+rootProject.name = "des-connect-android"

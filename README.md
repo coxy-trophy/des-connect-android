@@ -1,3 +1,11 @@
+# DES Connect Android fork
+
+This is the DES UI project's customized fork of KDE Connect Android, not an
+official KDE build. See [DES-CONNECT.md](DES-CONNECT.md) for changes, build
+instructions, upstream attribution and current limitations.
+
+---
+
 # KDE Connect - Android app
 
 KDE Connect is a multi-platform app that allows your devices to communicate (eg: your phone and your computer).

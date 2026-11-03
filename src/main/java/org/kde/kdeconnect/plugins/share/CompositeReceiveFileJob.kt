@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-03: derive runtime identity from this build.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2018 Erik Duisters <e.duisters1@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -375,7 +377,7 @@ class CompositeReceiveFileJob(device: Device, onFinished: (ShareJob) -> Unit)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             // Nougat and later require "content://" uris instead of "file://" uris
             val file = File(fileDocument.uri.path ?: "")
-            val contentUri = FileProvider.getUriForFile(device.context, "org.kde.kdeconnect_tp.fileprovider", file)
+            val contentUri = FileProvider.getUriForFile(device.context, device.context.packageName + ".fileprovider", file)
             intent.setDataAndType(contentUri, mimeType)
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         } else {

@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-03: derive runtime identity from this build.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2026 Albert Vaca Cintora <albertvaka@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -40,6 +42,7 @@ import org.kde.kdeconnect.plugins.Plugin
 import org.kde.kdeconnect.plugins.PluginFactory.LoadablePlugin
 import org.kde.kdeconnect.ui.PluginSettingsFragment
 import org.kde.kdeconnect.ui.StartActivityAlertDialogFragment
+import org.kde.kdeconnect_tp.BuildConfig
 import org.kde.kdeconnect_tp.R
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
@@ -203,7 +206,7 @@ class NotificationsPlugin : Plugin(), NotificationReceiver.NotificationListener 
             }
         }
 
-        if ("org.kde.kdeconnect_tp" == packageName || "org.kde.kdeconnect_tp.debug" == packageName) {
+        if (BuildConfig.APPLICATION_ID == packageName) {
             // Don't send our own notifications
             return
         }

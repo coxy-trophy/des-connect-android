@@ -1,3 +1,4 @@
+// DES Connect modification, 2026-11-03: independent app identity and branding.
 import com.android.build.api.instrumentation.AsmClassVisitorFactory
 import com.android.build.api.instrumentation.ClassContext
 import com.android.build.api.instrumentation.ClassData
@@ -39,7 +40,7 @@ android {
     namespace = "org.kde.kdeconnect_tp"
     compileSdk = 37
     defaultConfig {
-        applicationId = "org.kde.kdeconnect_tp"
+        applicationId = "io.github.coxytrophy.desconnect"
         minSdk = 23
         targetSdk = 37
         versionCode = 13700
