@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-03: display fork branding.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2023 Dmitry Yudin <dgyudin@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -24,7 +26,7 @@ import org.kde.kdeconnect_tp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KdeTopAppBar(
-    title: String = stringResource(R.string.kde_connect),
+    title: String = stringResource(R.string.des_connect_app_name),
     subTitle: String? = null,
     navIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
     navIconDescription: String = "",

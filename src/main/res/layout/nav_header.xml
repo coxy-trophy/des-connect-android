@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--
+<!-- DES Connect modification, 2026-11-03: display fork branding.
+SPDX-FileCopyrightText: 2026 Coxwell Wussah
+
 SPDX-FileCopyrightText: 2023 Albert Vaca Cintora <albertvaka@gmail.com>
 
 SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -42,7 +44,7 @@ SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted
                 android:id="@+id/kdeconnect_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/kde_connect"
+                android:text="@string/des_connect_app_name"
                 android:textAppearance="?attr/textAppearanceHeadline6" />
 
             <TextView

@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-03: display fork branding.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2014 Albert Vaca Cintora <albertvaka@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -403,7 +405,7 @@ class MprisPlugin : Plugin() {
                     Handler(Looper.getMainLooper()).post {
                         val notificationManager = context.getSystemService<NotificationManager>()!!
                         val builder = NotificationCompat.Builder(context, NotificationHelper.Channels.CONTINUEWATCHING)
-                            .setContentTitle(context.resources.getString(R.string.kde_connect))
+                            .setContentTitle(context.resources.getString(R.string.des_connect_app_name))
                             .setSmallIcon(R.drawable.ic_play_white)
                             .setTimeoutAfter(3000)
                             .setContentIntent(pendingIntent)

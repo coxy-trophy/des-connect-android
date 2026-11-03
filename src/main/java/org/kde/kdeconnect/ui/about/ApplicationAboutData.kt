@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-03: display fork branding.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2021 Maxim Leshchenko <cnmaks90@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -13,12 +15,12 @@ import org.kde.kdeconnect_tp.R
 * Add authors and credits here
  */
 val applicationAboutData = AboutData(
-        name = R.string.kde_connect,
+        name = R.string.des_connect_app_name,
         icon = R.drawable.icon,
         versionName = BuildConfig.VERSION_NAME,
-        bugURL = "https://bugs.kde.org/enter_bug.cgi?product=kdeconnect&amp;component=android-application",
-        websiteURL = "https://kdeconnect.kde.org/",
-        sourceCodeURL = "https://invent.kde.org/network/kdeconnect-android/",
+        bugURL = "https://github.com/coxy-trophy/des-connect-android/issues",
+        websiteURL = "https://github.com/coxy-trophy/des-connect-android",
+        sourceCodeURL = "https://github.com/coxy-trophy/des-connect-android",
         donateURL = "https://kde.org/community/donations/?app=kdeconnect-android",
         authorsFooterText = R.string.everyone_else,
         authors = listOf(

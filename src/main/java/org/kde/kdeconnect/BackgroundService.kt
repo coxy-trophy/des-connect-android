@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-03: display fork branding.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2014 Albert Vaca Cintora <albertvaka@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -184,7 +186,7 @@ class BackgroundService : Service() {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             // Pre-oreo, the notification will have an empty title line without this
-            notification.setContentTitle(getString(R.string.kde_connect))
+            notification.setContentTitle(getString(R.string.des_connect_app_name))
         }
 
         if (connectedDevices.isEmpty()) {

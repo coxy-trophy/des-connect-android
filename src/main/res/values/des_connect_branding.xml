@@ -3,4 +3,5 @@
      SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL -->
 <resources>
     <string name="des_connect_app_name" translatable="false">DES Connect</string>
+    <string name="des_connect_devices" translatable="false">Devices</string>
 </resources>

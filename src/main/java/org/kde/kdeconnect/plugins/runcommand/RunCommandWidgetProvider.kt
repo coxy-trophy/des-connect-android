@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-03: display fork branding.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2023 Albert Vaca Cintora <albertvaka@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -126,7 +128,7 @@ internal fun updateAppWidget(
         // 1. there is no preference string for this widget id
         // 2. the string id does not match any devices in KdeConnect.getInstance()
         // In both cases, we want the user to assign a device to this widget
-        views.setTextViewText(R.id.widget_title_text, context.getString(R.string.kde_connect))
+        views.setTextViewText(R.id.widget_title_text, context.getString(R.string.des_connect_app_name))
         views.setTextViewText(R.id.widget_error_text, context.getString(R.string.runcommand_widget_no_device))
     } else {
         views.setTextViewText(R.id.widget_title_text, device.name)
