@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <color name="launcher_background">#3daee9</color>
-
-    <!-- Whenever possible, don't hardcode colors here and rely on the default ones (eg: from the system or user theme) -->
-
+    <!-- Signal palette: canonical runtime owner shared by Views and Compose. -->
+    <color name="launcher_background">#06080B</color>
+    <color name="des_ground">#F3F7F8</color>
+    <color name="des_panel">#FFFFFF</color>
+    <color name="des_track">#E4ECEF</color>
+    <color name="des_line">#CEDADF</color>
+    <color name="des_outline">#526974</color>
+    <color name="des_text">#15252E</color>
+    <color name="des_secondary">#425C69</color>
+    <color name="des_accent">#006C66</color>
+    <color name="des_on_accent">#FFFFFF</color>
+    <color name="des_accent_container">#C2F3EC</color>
+    <color name="des_error">#A52C24</color>
+    <color name="des_error_container">#FFDAD4</color>
+    <color name="des_on_error">#FFFFFF</color>
+    <color name="des_on_error_container">#410002</color>
 </resources>

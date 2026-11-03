@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import org.kde.kdeconnect.ui.compose.KdeTheme
 import org.kde.kdeconnect_tp.R
@@ -25,7 +27,7 @@ fun SectionHeader(title: String) {
             top = 16.dp,
             start = 16.dp,
             end = 16.dp
-        ),
+        ).semantics { heading() },
     )
 }
 

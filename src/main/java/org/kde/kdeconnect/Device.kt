@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-03: initialize and refresh peer capability filtering.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2025 Albert Vaca Cintora <albertvaka@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -120,7 +122,7 @@ class Device : PacketReceiver {
         this.context = context
         this.deviceInfo = DeviceInfo.loadFromSettings(context, deviceId)
         this.pairingHandler = PairingHandler(this, createDefaultPairingCallback(), PairingHandler.PairState.Paired)
-        this.supportedPlugins = PluginFactory.availablePlugins // Assume all are supported until we receive capabilities
+        this.supportedPlugins = resolveSupportedPlugins(deviceInfo)
         Log.i("Device", "Loading trusted device: ${deviceInfo.name}")
     }
 
@@ -133,9 +135,20 @@ class Device : PacketReceiver {
         this.context = context
         this.deviceInfo = link.deviceInfo
         this.pairingHandler = PairingHandler(this, createDefaultPairingCallback(), PairingHandler.PairState.NotPaired)
-        this.supportedPlugins = PluginFactory.availablePlugins // Assume all are supported until we receive capabilities
+        this.supportedPlugins = resolveSupportedPlugins(deviceInfo)
         Log.i("Device", "Creating untrusted device: ${deviceInfo.name}")
         addLink(link)
+    }
+
+    private fun resolveSupportedPlugins(info: DeviceInfo): Set<String> {
+        val incoming = info.incomingCapabilities
+        val outgoing = info.outgoingCapabilities
+        // Missing capabilities are legacy/unknown. Explicit empty sets mean no support.
+        return if (incoming == null || outgoing == null) {
+            PluginFactory.availablePlugins
+        } else {
+            PluginFactory.pluginsForCapabilities(incoming, outgoing)
+        }
     }
 
     fun supportsPacketType(type: String): Boolean =
@@ -416,22 +429,20 @@ class Device : PacketReceiver {
         val oldOutgoingCapabilities = deviceInfo.outgoingCapabilities
         val newIncomingCapabilities = newDeviceInfo.incomingCapabilities
         val newOutgoingCapabilities = newDeviceInfo.outgoingCapabilities
-        if (
-            !newIncomingCapabilities.isNullOrEmpty() &&
-            !newOutgoingCapabilities.isNullOrEmpty() &&
-            (
-                oldIncomingCapabilities != newIncomingCapabilities ||
-                oldOutgoingCapabilities != newOutgoingCapabilities
-            )
-        ) {
-            hasChanges = true
-            Log.i("updateDeviceInfo", "Updating supported plugins according to new capabilities")
-            deviceInfo.outgoingCapabilities = newOutgoingCapabilities
-            deviceInfo.incomingCapabilities = newIncomingCapabilities
-            supportedPlugins = PluginFactory.pluginsForCapabilities(
-                newIncomingCapabilities,
-                newOutgoingCapabilities
-            )
+        if (newIncomingCapabilities != null && newOutgoingCapabilities != null) {
+            val newSupportedPlugins = resolveSupportedPlugins(newDeviceInfo)
+            // The initial link and Device can share DeviceInfo. Check the derived plugin
+            // selection too, so aliased updates and explicit capability removal take effect.
+            if (oldIncomingCapabilities != newIncomingCapabilities ||
+                oldOutgoingCapabilities != newOutgoingCapabilities ||
+                supportedPlugins != newSupportedPlugins
+            ) {
+                hasChanges = true
+                Log.i("updateDeviceInfo", "Updating supported plugins according to new capabilities")
+                deviceInfo.outgoingCapabilities = newOutgoingCapabilities
+                deviceInfo.incomingCapabilities = newIncomingCapabilities
+                supportedPlugins = newSupportedPlugins
+            }
         }
 
         return hasChanges

@@ -14,7 +14,6 @@ SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted
     android:layout_margin="4dp"
     android:focusable="true"
     android:clickable="true"
-    android:background="?android:attr/selectableItemBackground"
     style="@style/KdeConnectCardStyle.Filled"
     app:contentPadding="@dimen/view_default_padding">
 
@@ -56,10 +55,9 @@ SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dip"
-                    android:singleLine="true"
-                    android:text=""
+                                        android:text=""
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#CC2222"
+                    android:textColor="@color/des_error"
                     android:visibility="gone"
                     tools:text="Other (optional) info"
                     tools:visibility="gone"/>

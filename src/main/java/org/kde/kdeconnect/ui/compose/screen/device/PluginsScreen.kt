@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-03: show an honest connected state without controls.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2026 Saul Cintero Chocarro <scintero@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -6,23 +8,29 @@
 
 package org.kde.kdeconnect.ui.compose.screen.device
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -32,7 +40,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.kde.kdeconnect.extensions.safeDrawingBottomPadding
@@ -43,6 +50,8 @@ import org.kde.kdeconnect.plugins.ping.PingPlugin
 import org.kde.kdeconnect.plugins.presenter.PresenterPlugin
 import org.kde.kdeconnect.plugins.runcommand.RunCommandPlugin
 import org.kde.kdeconnect.ui.compose.KdeTheme
+import org.kde.kdeconnect.ui.compose.components.KdeBodyMediumText
+import org.kde.kdeconnect.ui.compose.components.KdeTitleMediumText
 import org.kde.kdeconnect.ui.compose.components.KdeThemePreviews
 import org.kde.kdeconnect_tp.R
 
@@ -76,35 +85,54 @@ private fun PluginsScreenContent(
 ) {
     val bottomPadding = safeDrawingBottomPadding().calculateBottomPadding()
 
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(state = rememberScrollState())
-                .padding(top = 16.dp, bottom = bottomPadding)
-        ) {
-            val numColumns = LocalResources.current.getInteger(R.integer.plugins_columns)
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Box(contentAlignment = Alignment.TopCenter) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 720.dp)
+                    .fillMaxSize()
+                    .verticalScroll(state = rememberScrollState())
+                    .padding(top = 16.dp, bottom = bottomPadding)
+            ) {
+                val numColumns = LocalResources.current.getInteger(R.integer.plugins_columns)
 
-            PluginButtons(
-                buttons = pluginsWithButtons,
-                numColumns = numColumns,
-                onButtonClick = onButtonClick
-            )
-            Spacer(modifier = Modifier.padding(vertical = 6.dp))
-            if (pluginsNeedPermissions.isNotEmpty()) {
-                PluginsWithoutPermissions(
-                    title = stringResource(id = R.string.plugins_need_permission),
-                    plugins = pluginsNeedPermissions,
-                    action = actionNeedPermissions,
+                if (pluginsWithButtons.isEmpty() && pluginsNeedPermissions.isEmpty() &&
+                    pluginsNeedOptionalPermissions.isEmpty()
+                ) {
+                    KdeTitleMediumText(
+                        text = stringResource(R.string.device_connected),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            .semantics { heading() }
+                    )
+                    KdeBodyMediumText(
+                        text = stringResource(R.string.device_no_controls),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+
+                PluginButtons(
+                    buttons = pluginsWithButtons,
+                    numColumns = numColumns,
+                    onButtonClick = onButtonClick
                 )
-                Spacer(modifier = Modifier.padding(vertical = 2.dp))
-            }
-            if (pluginsNeedOptionalPermissions.isNotEmpty()) {
-                PluginsWithoutPermissions(
-                    title = stringResource(id = R.string.plugins_need_optional_permission),
-                    plugins = pluginsNeedOptionalPermissions,
-                    action = actionNeedOptionalPermissions
-                )
+                Spacer(modifier = Modifier.padding(vertical = 6.dp))
+                if (pluginsNeedPermissions.isNotEmpty()) {
+                    PluginsWithoutPermissions(
+                        title = stringResource(id = R.string.plugins_need_permission),
+                        plugins = pluginsNeedPermissions,
+                        action = actionNeedPermissions,
+                    )
+                    Spacer(modifier = Modifier.padding(vertical = 2.dp))
+                }
+                if (pluginsNeedOptionalPermissions.isNotEmpty()) {
+                    PluginsWithoutPermissions(
+                        title = stringResource(id = R.string.plugins_need_optional_permission),
+                        plugins = pluginsNeedOptionalPermissions,
+                        action = actionNeedOptionalPermissions
+                    )
+                }
             }
         }
     }
@@ -153,6 +181,8 @@ private fun PluginButton(
 ) {
     Card(
         shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = modifier.semantics { role = Role.Button },
         onClick = onClick
     ) {
@@ -163,14 +193,14 @@ private fun PluginButton(
             Icon(
                 painter = painterResource(id = button.iconRes),
                 modifier = Modifier.padding(top = 12.dp),
-                contentDescription = null
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
             )
             Text(
                 text = button.name,
-                maxLines = 2,
                 minLines = 2,
                 fontSize = 18.sp,
-                overflow = TextOverflow.Ellipsis
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -193,6 +223,7 @@ private fun PluginsWithoutPermissions(
             text = plugin.displayName,
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 48.dp)
                 .clickable { action(plugin) }
                 .padding(start = 28.dp, end = 16.dp, top = 12.dp, bottom = 12.dp)
                 .semantics { role = Role.Button }
@@ -221,6 +252,21 @@ private fun PluginsScreenPreview() {
             onButtonClick = { /* Do nothing */ },
             actionNeedPermissions = { /* Do nothing */ },
             actionNeedOptionalPermissions = { /* Do nothing */ },
+        )
+    }
+}
+
+@KdeThemePreviews
+@Composable
+private fun ConnectedWithoutControlsPreview() {
+    KdeTheme(context = LocalContext.current) {
+        PluginsScreenContent(
+            pluginsWithButtons = emptyList(),
+            pluginsNeedPermissions = emptyList(),
+            pluginsNeedOptionalPermissions = emptyList(),
+            onButtonClick = {},
+            actionNeedPermissions = {},
+            actionNeedOptionalPermissions = {}
         )
     }
 }

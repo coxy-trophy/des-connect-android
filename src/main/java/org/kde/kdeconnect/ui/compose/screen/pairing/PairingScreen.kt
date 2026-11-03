@@ -7,6 +7,7 @@
 package org.kde.kdeconnect.ui.compose.screen.pairing
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,8 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -31,13 +32,13 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -90,12 +91,16 @@ private fun PairingScreenContent(
     PullToRefreshBox(
         isRefreshing = uiState.isRefreshing,
         onRefresh = onRefresh,
-        state = pullRefreshState
+        state = pullRefreshState,
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
     ) {
         LazyColumn(
             modifier = Modifier
+                .align(Alignment.TopCenter)
+                .widthIn(max = 720.dp)
                 .fillMaxSize()
-                .padding(horizontal = 12.dp),
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 16.dp),
             contentPadding = safeDrawingBottomPadding(),
             state = lazyListState
         ) {
@@ -232,7 +237,8 @@ fun PairingExplanationRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .defaultMinSize(minHeight = 48.dp)
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -246,7 +252,7 @@ fun PairingExplanationRow(
         }
         KdeBodyMediumText(
             text = text,
-            onClick = { onClick?.invoke() }
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -263,7 +269,8 @@ fun DuplicateNamesWarning() {
 fun EmptyPlaceholder() {
     KdeBodySmallText(
         text = stringResource(R.string.device_list_empty),
-        modifier = Modifier.padding(10.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,
     )
 }
@@ -286,24 +293,23 @@ private fun CardContent(
 private fun PairingScreenCardContent(device: DeviceUiModel) {
     Row(
         modifier = Modifier
-            .wrapContentSize()
-            .defaultMinSize(minHeight = 48.dp)
-            .padding(all = 32.dp),
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 72.dp)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (device.icon > 0) {
             Image(
                 imageVector = ImageVector.vectorResource(id = device.icon),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
                 modifier = Modifier
-                    .padding(start = 12.dp)
                     .size(32.dp)
                     .wrapContentHeight()
             )
         }
         Column(
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier.weight(1f).padding(start = 16.dp)
         ) {
             KdeBodyLargeText(
                 text = device.name,
@@ -312,9 +318,8 @@ private fun PairingScreenCardContent(device: DeviceUiModel) {
             if (device.summaryRes > 0) {
                 KdeBodySmallText(
                     text = stringResource(id = device.summaryRes),
-                    color = Color(0xFFCC2222),
+                    color = MaterialTheme.colorScheme.error,
                     fontSize = 14.sp,
-                    maxLines = 1,
                 )
             }
         }

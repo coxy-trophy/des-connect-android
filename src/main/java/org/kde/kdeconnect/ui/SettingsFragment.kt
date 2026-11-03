@@ -130,7 +130,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         setDialogTitle(R.string.theme_dialog_title)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) setEntries(R.array.theme_list_v28) else setEntries(R.array.theme_list)
         setEntryValues(R.array.theme_list_values)
-        setDefaultValue(ThemeUtil.DEFAULT_MODE)
+        setDefaultValue(ThemeUtil.DARK_MODE)
         summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
         onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, new: Any? ->
             if (new is String) {

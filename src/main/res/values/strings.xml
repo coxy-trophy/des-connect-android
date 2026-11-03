@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
+DES Connect modification, 2026-11-03: connected device empty-controls state.
+SPDX-FileCopyrightText: 2026 Coxwell Wussah
 SPDX-FileCopyrightText: 2023 Albert Vaca Cintora <albertvaka@gmail.com>
 
 SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -255,6 +257,8 @@ SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted
     <string name="middle_click">Send Middle Click</string>
     <string name="show_keyboard">Show Keyboard</string>
     <string name="show_mouse_and_keyboard">Show Mouse and Keyboard</string>
+    <string name="device_connected">Connected</string>
+    <string name="device_no_controls">No controls are available for this device. Check the device menu for other actions.</string>
     <string name="device_not_paired">Device not paired</string>
     <string name="pairing_missing_local_network_permission">Missing permission to access nearby devices, the app will not work.</string>
     <string name="pairing_duplicate_names">Caution: There are multiple devices with the same name.</string>

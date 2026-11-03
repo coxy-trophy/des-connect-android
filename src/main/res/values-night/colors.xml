@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Signal palette: canonical runtime owner shared by Views and Compose. -->
+    <color name="launcher_background">#06080B</color>
+    <color name="des_ground">#06080B</color>
+    <color name="des_panel">#0A0E12</color>
+    <color name="des_track">#141B22</color>
+    <color name="des_line">#1A232B</color>
+    <color name="des_outline">#6F8492</color>
+    <color name="des_text">#DCE7EC</color>
+    <color name="des_secondary">#8FA3B0</color>
+    <color name="des_accent">#4FE3D8</color>
+    <color name="des_on_accent">#052321</color>
+    <color name="des_accent_container">#153B3A</color>
+    <color name="des_error">#FF9B8F</color>
+    <color name="des_error_container">#4A211F</color>
+    <color name="des_on_error">#410002</color>
+    <color name="des_on_error_container">#FFEDEA</color>
+</resources>
