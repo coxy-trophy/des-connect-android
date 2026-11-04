@@ -1,14 +1,18 @@
 /*
+ * DES Connect modification, 2026-11-04: expose independent system-volume controls.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2018 Nicolas Fella <nicolas.fella@gmx.de>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
  */
 package org.kde.kdeconnect.plugins.systemvolume
 
+import android.content.Intent
 import android.util.Log
 import kotlinx.serialization.SerializationException
 import org.kde.kdeconnect.NetworkPacket
 import org.kde.kdeconnect.plugins.Plugin
+import org.kde.kdeconnect.plugins.mpris.MprisActivity
 import org.kde.kdeconnect.plugins.PluginFactory.LoadablePlugin
 import org.kde.kdeconnect_tp.R
 import java.util.concurrent.ConcurrentHashMap
@@ -29,6 +33,17 @@ class SystemVolumePlugin : Plugin() {
         get() = context.resources.getString(R.string.pref_plugin_systemvolume_desc)
 
     override val keepAliveWhenUnreachable: Boolean = true
+
+    override fun getUiButtons(): List<PluginUiButton> {
+        // The media plugin already exposes the combined Play/Devices screen.
+        if (device.getPlugin("MprisPlugin") != null) return emptyList()
+        return listOf(PluginUiButton(displayName, R.drawable.ic_volume) { activity ->
+            val intent = Intent(activity, MprisActivity::class.java)
+                .putExtra(MprisActivity.EXTRA_DEVICE_ID, device.deviceId)
+                .putExtra(MprisActivity.EXTRA_SHOW_VOLUME, true)
+            activity.startActivity(intent)
+        })
+    }
 
     override fun onPacketReceived(np: NetworkPacket): Boolean {
         if ("sinkList" in np) {

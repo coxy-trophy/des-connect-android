@@ -38,3 +38,30 @@ until this bounded accept timeout when no receiver connects.
 ## Reused-link identity changes (2026-11-03)
 
 KdeConnect.connectionListener reloads the device plugin lifecycle when an existing link reports changed identity/capability data, before notifying device-list observers. Loaded handlers, menu actions and permission rows must match the updated supported set without requiring a new link or application restart. Identical identity data does not trigger a reload or observer notification. DeviceCapabilitiesTest exercises the actual callback with real plugin load/unload and observer snapshots.
+
+## Plugin startup replies (2026-11-04)
+
+Device serializes plugin packet dispatch with plugin reload on the same monitor. Replies to requests sent during plugin creation wait until creation and incoming-interface registration finish. Reload cannot destroy a plugin while its packet handler is running, and packets arriving during unload cannot reach the removed plugin. DeviceCapabilitiesTest exercises these interleavings with real Device reload/dispatch and controlled Plugin lifecycle hooks; no request retries or timing sleeps are added.
+
+## Independent system-volume controls (2026-11-04)
+
+A loaded SystemVolumePlugin exposes its translated control button when MprisPlugin
+is absent. It opens the existing Multimedia control activity directly on Devices.
+When both plugins are loaded, the existing combined entrypoint owns navigation
+and the volume plugin adds no duplicate button. The activity omits MPRIS settings
+when that plugin is unavailable. Permission policy remains desktop-owned; this
+entrypoint does not enable media export or change any volume by itself.
+
+The multimedia pager includes only pages whose plugins are loaded: Play for
+MPRIS, Devices for system volume, both when available, and immediate activity
+closure when neither remains at launch. This prevents adjacent-page preloading
+from creating a missing MPRIS fragment that would close volume-only controls.
+SystemVolumeUiTest verifies the actual adapter's fragment classes for all four
+permission combinations as well as the button's target device/tab intent.
+
+Pager identities remain Play=0 and Devices=1 across capability combinations.
+Unavailable page IDs are excluded from restoration, preventing a saved Play
+fragment from being restored into a volume-only slot. Hardware volume-key routing
+looks up fragments by stable item ID and ignores invalid positions. The adapter
+regression verifies retained IDs, exclusion of unavailable IDs and actual
+volume-key callback delivery through the framework's fragment map.

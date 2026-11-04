@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-04: resolve fragments by stable pager item ID.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2021 Art Pinch <leonardo906@mail.ru>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -48,8 +50,9 @@ abstract class ExtendedFragmentAdapter : FragmentStateAdapter {
     }
 
     protected fun getFragment(position: Int): Fragment? {
+        if (position !in 0 until itemCount) return null
         val adapterFragments = getReflectionFragments() ?: return null
 
-        return adapterFragments[position.toLong()]
+        return adapterFragments[getItemId(position)]
     }
 }

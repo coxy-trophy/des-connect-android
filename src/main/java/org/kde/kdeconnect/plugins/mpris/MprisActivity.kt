@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-04: support an independent volume-control entrypoint.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2014 Albert Vaca Cintora <albertvaka@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -63,6 +65,10 @@ class MprisActivity : BaseActivity<ActivityMprisBinding>() {
         binding.root.addDeviceDisconnectedOverlay(device)
 
         mprisPagerAdapter = MprisPagerAdapter(this, deviceId)
+        if (mprisPagerAdapter.itemCount == 0) {
+            finish()
+            return
+        }
         binding.mprisPager.adapter = mprisPagerAdapter
 
         val tabLayoutMediator = TabLayoutMediator(
@@ -74,13 +80,18 @@ class MprisActivity : BaseActivity<ActivityMprisBinding>() {
         }
 
         tabLayoutMediator.attach()
+        if (intent.getBooleanExtra(EXTRA_SHOW_VOLUME, false) && mprisPagerAdapter.volumePageIndex >= 0) {
+            binding.mprisPager.setCurrentItem(mprisPagerAdapter.volumePageIndex, false)
+        }
 
         setSupportActionBar(binding.toolbar)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menu.add(0, MENU_OPEN_SETTINGS, Menu.NONE, R.string.device_menu_plugins)
+        if (KdeConnect.getInstance().getDevice(deviceId)?.getPlugin("MprisPlugin") != null) {
+            menu.add(0, MENU_OPEN_SETTINGS, Menu.NONE, R.string.device_menu_plugins)
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -95,19 +106,29 @@ class MprisActivity : BaseActivity<ActivityMprisBinding>() {
 
     internal class MprisPagerAdapter(fragmentActivity: FragmentActivity, private val deviceId: String) :
         ExtendedFragmentAdapter(fragmentActivity) {
-        override fun createFragment(position: Int): Fragment = if (position == 1) {
-            SystemVolumeFragment.newInstance(deviceId)
-        } else {
-            MprisNowPlayingFragment.newInstance(deviceId)
+        // Preserve the original two-page IDs even when one page is omitted.
+        private enum class Page(val stableId: Long) { PLAY(0L), VOLUME(1L) }
+        private val pages = buildList {
+            val device = KdeConnect.getInstance().getDevice(deviceId)
+            if (device?.getPlugin("MprisPlugin") != null) add(Page.PLAY)
+            if (device?.getPlugin("SystemVolumePlugin") != null) add(Page.VOLUME)
         }
 
-        override fun getItemCount(): Int = 2
+        val volumePageIndex: Int get() = pages.indexOf(Page.VOLUME)
+
+        override fun createFragment(position: Int): Fragment = when (pages[position]) {
+            Page.VOLUME -> SystemVolumeFragment.newInstance(deviceId)
+            Page.PLAY -> MprisNowPlayingFragment.newInstance(deviceId)
+        }
+
+        override fun getItemCount(): Int = pages.size
+        override fun getItemId(position: Int): Long = pages[position].stableId
+        override fun containsItem(itemId: Long): Boolean = pages.any { it.stableId == itemId }
 
         @StringRes
-        fun getTitle(position: Int): Int = if (position == 1) {
-            R.string.devices
-        } else {
-            R.string.mpris_play
+        fun getTitle(position: Int): Int = when (pages[position]) {
+            Page.VOLUME -> R.string.devices
+            Page.PLAY -> R.string.mpris_play
         }
 
         fun onVolumeUp(page: Int) {
@@ -135,6 +156,7 @@ class MprisActivity : BaseActivity<ActivityMprisBinding>() {
     companion object {
         const val EXTRA_DEVICE_ID: String = "deviceId"
         const val EXTRA_PLAYER: String = "player"
+        const val EXTRA_SHOW_VOLUME: String = "showVolume"
         const val MENU_OPEN_SETTINGS: Int = Menu.FIRST
         const val MENU_OPEN_URL: Int = Menu.FIRST + 1
     }
