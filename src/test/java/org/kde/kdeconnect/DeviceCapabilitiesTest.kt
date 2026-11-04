@@ -1,5 +1,6 @@
 /*
  * DES Connect modification, 2026-11-03: regressions for peer capability filtering.
+ * DES Connect modification, 2026-11-04: regressions for packet dispatch during plugin lifecycle changes.
  * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -27,7 +28,12 @@ import org.kde.kdeconnect.plugins.Plugin
 import org.kde.kdeconnect.plugins.PluginFactory
 import org.kde.kdeconnect.plugins.ping.PingPlugin
 import org.robolectric.annotation.Config
+import java.lang.management.ManagementFactory
 import java.security.cert.Certificate
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.FutureTask
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(AndroidJUnit4::class)
 @Config(application = Application::class, sdk = [28])
@@ -75,6 +81,136 @@ class DeviceCapabilitiesTest {
         return Device(context, link).also {
             connections.add(it to link)
         }
+    }
+
+    // Removing lifecycle serialization must fail these tests: a reply is either lost
+    // before registration, or packet dispatch can overlap plugin destruction.
+    private class LifecyclePlugin : Plugin() {
+        override val displayName = "Lifecycle test"
+        override val description = "Lifecycle test"
+        override val supportedPacketTypes = arrayOf("kdeconnect.ping")
+        override val outgoingPacketTypes = emptyArray<String>()
+        var creating: () -> Unit = {}
+        var destroying: () -> Unit = {}
+        var receiving: () -> Unit = {}
+        val received = AtomicInteger()
+        override fun onCreate() = creating()
+        override fun onDestroy() = destroying()
+        override fun onPacketReceived(np: NetworkPacket): Boolean {
+            receiving()
+            received.incrementAndGet()
+            return true
+        }
+    }
+
+    private fun pairedDeviceWith(plugin: LifecyclePlugin): Device =
+        discover(setOf("kdeconnect.ping"), setOf("kdeconnect.ping")).also {
+            it.pairingHandler.state = PairingHandler.PairState.Paired
+            plugin.setContext(context, it)
+            // Use real Plugin.create/destroy and Device reload/dispatch. Only replace
+            // Ping's Android notification effects with controllable lifecycle hooks.
+            it.loadedPlugins["PingPlugin"] = plugin
+        }
+
+    private fun worker(action: () -> Unit): Pair<Thread, FutureTask<Unit>> {
+        val result = FutureTask { action() }
+        return Thread(result).also { it.start() } to result
+    }
+
+    private fun awaitDeviceBlockedOrFinished(thread: Thread, device: Device): Boolean {
+        val threads = ManagementFactory.getThreadMXBean()
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5)
+        while (thread.isAlive && System.nanoTime() < deadline) {
+            val info = threads.getThreadInfo(thread.threadId())
+            if (info?.threadState == Thread.State.BLOCKED &&
+                info.lockInfo?.identityHashCode == System.identityHashCode(device)) return true
+            Thread.yield()
+        }
+        return false
+    }
+
+    @Test
+    fun startupReplyWaitsForPluginCreationAndDispatchMapPublication() {
+        val enteredCreate = CountDownLatch(1)
+        val finishCreate = CountDownLatch(1)
+        val plugin = LifecyclePlugin().apply {
+            creating = {
+                enteredCreate.countDown()
+                check(finishCreate.await(5, TimeUnit.SECONDS))
+            }
+        }
+        val device = pairedDeviceWith(plugin)
+        val (_, reload) = worker { device.reloadPluginsFromSettings() }
+        var reply: FutureTask<Unit>? = null
+        try {
+            assertTrue(enteredCreate.await(5, TimeUnit.SECONDS))
+            val (reader, result) = worker { device.onPacketReceived(NetworkPacket("kdeconnect.ping")) }
+            reply = result
+            assertTrue("Reply must wait for plugin creation", awaitDeviceBlockedOrFinished(reader, device))
+            assertEquals(0, plugin.received.get())
+        } finally {
+            finishCreate.countDown()
+            reload.get(5, TimeUnit.SECONDS)
+            reply?.get(5, TimeUnit.SECONDS)
+        }
+        assertEquals("The startup reply must reach the newly registered plugin", 1, plugin.received.get())
+    }
+
+    @Test
+    fun replyDuringUnloadWaitsAndNeverReachesDestroyedPlugin() {
+        val enteredDestroy = CountDownLatch(1)
+        val finishDestroy = CountDownLatch(1)
+        val plugin = LifecyclePlugin().apply {
+            destroying = {
+                enteredDestroy.countDown()
+                check(finishDestroy.await(5, TimeUnit.SECONDS))
+            }
+        }
+        val device = pairedDeviceWith(plugin)
+        device.reloadPluginsFromSettings()
+        val (_, unload) = worker { device.setPluginEnabled("PingPlugin", false) }
+        var reply: FutureTask<Unit>? = null
+        try {
+            assertTrue(enteredDestroy.await(5, TimeUnit.SECONDS))
+            val (reader, result) = worker { device.onPacketReceived(NetworkPacket("kdeconnect.ping")) }
+            reply = result
+            assertTrue("Dispatch must wait for plugin destruction", awaitDeviceBlockedOrFinished(reader, device))
+        } finally {
+            finishDestroy.countDown()
+            unload.get(5, TimeUnit.SECONDS)
+            reply?.get(5, TimeUnit.SECONDS)
+        }
+        assertEquals(0, plugin.received.get())
+        assertTrue(device.loadedPlugins.isEmpty())
+    }
+
+    @Test
+    fun unloadWaitsForAnAlreadyRunningPacketHandler() {
+        val enteredHandler = CountDownLatch(1)
+        val finishHandler = CountDownLatch(1)
+        val plugin = LifecyclePlugin().apply {
+            receiving = {
+                enteredHandler.countDown()
+                check(finishHandler.await(5, TimeUnit.SECONDS))
+            }
+        }
+        val device = pairedDeviceWith(plugin)
+        device.reloadPluginsFromSettings()
+        val (_, reply) = worker { device.onPacketReceived(NetworkPacket("kdeconnect.ping")) }
+        var unload: FutureTask<Unit>? = null
+        try {
+            assertTrue(enteredHandler.await(5, TimeUnit.SECONDS))
+            val (reloader, result) = worker { device.setPluginEnabled("PingPlugin", false) }
+            unload = result
+            assertTrue("Unload must wait for an active handler", awaitDeviceBlockedOrFinished(reloader, device))
+            assertSame(plugin, device.getPlugin("PingPlugin"))
+        } finally {
+            finishHandler.countDown()
+            reply.get(5, TimeUnit.SECONDS)
+            unload?.get(5, TimeUnit.SECONDS)
+        }
+        assertEquals(1, plugin.received.get())
+        assertTrue(device.loadedPlugins.isEmpty())
     }
 
     @Test

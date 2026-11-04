@@ -1,5 +1,6 @@
 /*
  * DES Connect modification, 2026-11-03: initialize and refresh peer capability filtering.
+ * DES Connect modification, 2026-11-04: serialize packet dispatch with plugin lifecycle changes.
  * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2025 Albert Vaca Cintora <albertvaka@gmail.com>
  *
@@ -472,6 +473,10 @@ class Device : PacketReceiver {
         notifyPluginPacketReceived(np)
     }
 
+    // Creation may send requests before reload publishes the incoming-interface map.
+    // Share its monitor so fast replies wait for publication, and handlers cannot
+    // overlap plugin destruction.
+    @Synchronized
     private fun notifyPluginPacketReceived(np: NetworkPacket) {
         val targetPlugins = pluginsByIncomingInterface[np.type] ?: emptyList()
         if (targetPlugins.isEmpty()) {
