@@ -24,3 +24,17 @@ No data mutation, permission, authentication, polling or remote-control behavior
 Device initializes supported plugins from the initial identity before loading modules. PluginFactory owns the existing directional OR matching: a shared send or receive packet type is sufficient. Both explicit capability vectors, including empty sets, are authoritative; missing/null vectors retain the upstream legacy fallback. Later explicit updates refresh the derived selection even when DeviceInfo is aliased. The existing plugin lifecycle removes unsupported loaded modules and both permission maps, so views never need a desktop-specific allowlist.
 
 The paired, reachable plugin view shows Connected and a resource-backed explanation when it has no controls or permission requests. Existing overflow actions, including Send ping when PingPlugin is supported, remain available. For peers with explicit capability vectors, controls and permission requests derive from matching modules rather than Android module availability alone.
+
+## File offer approval window
+
+The payload listener waits at most60seconds for a receiving peer to connect,
+allowing DES desktop users to review its30-second incoming-file offer. TLS
+handshake deadlines are unchanged. This wait neither accepts a file nor changes
+Android's existing incoming-file behavior; desktop approval belongs to the native
+service/panel. Listener, socket and payload are closed by the existing finally
+block on success or failure. Cancellation retains upstream semantics and may wait
+until this bounded accept timeout when no receiver connects.
+
+## Reused-link identity changes (2026-11-03)
+
+KdeConnect.connectionListener reloads the device plugin lifecycle when an existing link reports changed identity/capability data, before notifying device-list observers. Loaded handlers, menu actions and permission rows must match the updated supported set without requiring a new link or application restart. Identical identity data does not trigger a reload or observer notification. DeviceCapabilitiesTest exercises the actual callback with real plugin load/unload and observer snapshots.

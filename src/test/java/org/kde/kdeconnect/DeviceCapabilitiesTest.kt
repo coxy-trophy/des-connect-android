@@ -17,6 +17,7 @@ import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -24,6 +25,7 @@ import org.junit.runner.RunWith
 import org.kde.kdeconnect.backends.BaseLink
 import org.kde.kdeconnect.plugins.Plugin
 import org.kde.kdeconnect.plugins.PluginFactory
+import org.kde.kdeconnect.plugins.ping.PingPlugin
 import org.robolectric.annotation.Config
 import java.security.cert.Certificate
 
@@ -169,5 +171,70 @@ class DeviceCapabilitiesTest {
         assertFalse(device.loadedPlugins.containsKey("ClipboardPlugin"))
         assertFalse(device.pluginsWithoutPermissions.containsKey("ClipboardPlugin"))
         assertFalse(device.pluginsWithoutOptionalPermissions.containsKey("ClipboardPlugin"))
+    }
+
+    @Test
+    fun reusedLinkCallbackLoadsNewlySupportedPluginBeforeNotifyingObservers() {
+        val device = discover(emptySet(), emptySet())
+        device.pairingHandler.state = PairingHandler.PairState.Paired
+        val application = KdeConnect()
+        application.devices[device.deviceId] = device
+        val observedPlugins = mutableListOf<Set<String>>()
+        application.addDeviceListChangedCallback("test") {
+            observedPlugins.add(device.loadedPlugins.keys.toSet())
+        }
+
+        application.connectionListener.onDeviceInfoUpdated(device.deviceInfo.copy(
+            incomingCapabilities = setOf("kdeconnect.ping"),
+            outgoingCapabilities = setOf("kdeconnect.ping")
+        ))
+
+        assertEquals(setOf("PingPlugin"), device.supportedPlugins)
+        assertTrue(device.getPlugin("PingPlugin") is PingPlugin)
+        assertEquals(1, device.getPlugin("PingPlugin")!!.getUiMenuEntries().size)
+        assertEquals(listOf(setOf("PingPlugin")), observedPlugins)
+    }
+
+    @Test
+    fun reusedLinkCallbackUnloadsRemovedPluginBeforeNotifyingObservers() {
+        val device = discover(setOf("kdeconnect.ping"), setOf("kdeconnect.ping"))
+        device.pairingHandler.state = PairingHandler.PairState.Paired
+        device.reloadPluginsFromSettings()
+        assertTrue(device.getPlugin("PingPlugin") is PingPlugin)
+        val application = KdeConnect()
+        application.devices[device.deviceId] = device
+        val observedPlugins = mutableListOf<Set<String>>()
+        application.addDeviceListChangedCallback("test") {
+            observedPlugins.add(device.loadedPlugins.keys.toSet())
+        }
+
+        application.connectionListener.onDeviceInfoUpdated(device.deviceInfo.copy(
+            incomingCapabilities = emptySet(), outgoingCapabilities = emptySet()
+        ))
+
+        assertTrue(device.supportedPlugins.isEmpty())
+        assertTrue(device.loadedPlugins.isEmpty())
+        assertEquals(listOf(emptySet<String>()), observedPlugins)
+    }
+
+    @Test
+    fun reusedLinkCallbackDoesNotReloadOrNotifyForIdenticalCapabilities() {
+        val device = discover(setOf("kdeconnect.ping"), setOf("kdeconnect.ping"))
+        device.pairingHandler.state = PairingHandler.PairState.Paired
+        device.reloadPluginsFromSettings()
+        val plugin = device.getPlugin("PingPlugin")
+        assertTrue(plugin is PingPlugin)
+        val application = KdeConnect()
+        application.devices[device.deviceId] = device
+        var pluginChanges = 0
+        var deviceChanges = 0
+        device.addPluginsChangedListener { pluginChanges++ }
+        application.addDeviceListChangedCallback("test") { deviceChanges++ }
+
+        application.connectionListener.onDeviceInfoUpdated(device.deviceInfo.copy())
+
+        assertSame(plugin, device.getPlugin("PingPlugin"))
+        assertEquals(0, pluginChanges)
+        assertEquals(0, deviceChanges)
     }
 }

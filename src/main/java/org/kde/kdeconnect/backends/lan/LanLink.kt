@@ -1,4 +1,6 @@
 /*
+ * DES Connect modification, 2026-11-03: allow time for explicit file-receive approval.
+ * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2014 Albert Vaca Cintora <albertvaka@gmail.com>
  *
  * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
@@ -178,8 +180,10 @@ class LanLink(
             val inputStream = payload.inputStream
                 ?: throw IOException("Payload for packet ${np.type} has no InputStream")
 
-            // Wait a maximum of 10 seconds for the other end to establish a connection with our socket, close it afterwards
-            server.setSoTimeout(10 * 1000)
+            // DES Connect's desktop can wait for explicit receive approval. Keep the
+            // listener bounded while allowing time to review its 30-second offer.
+            // This changes only the accept wait, not the TLS handshake timeout.
+            server.setSoTimeout(60 * 1000)
 
             payloadSocket = server.accept()
 
