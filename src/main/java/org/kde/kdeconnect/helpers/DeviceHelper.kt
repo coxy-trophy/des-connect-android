@@ -140,15 +140,31 @@ object DeviceHelper {
         return preferences.getString(KEY_DEVICE_ID_PREFERENCE, null)!!
     }
 
-    fun getDeviceInfo(context: Context): DeviceInfo {
+    /**
+     * Our identity. With a [trustedPeerId], which must only be passed for the identity sent
+     * to that paired device inside its encrypted session, it also lists the packet types of
+     * the opt-in plugins ([org.kde.kdeconnect.plugins.Plugin.advertiseOnlyWhenEnabled]) the
+     * user enabled for that device. Without one (broadcasts, unpaired devices) it never does.
+     */
+    fun getDeviceInfo(context: Context, trustedPeerId: String? = null): DeviceInfo {
+        var incoming = PluginFactory.incomingCapabilities
+        var outgoing = PluginFactory.outgoingCapabilities
+        if (trustedPeerId != null && TrustedDevices.isTrustedDevice(context, trustedPeerId)) {
+            val settings = TrustedDevices.getDeviceSettings(context, trustedPeerId)
+            val (optInIncoming, optInOutgoing) = PluginFactory.optInCapabilities { pluginKey, info ->
+                settings.getBoolean(pluginKey, info.isEnabledByDefault)
+            }
+            incoming = incoming + optInIncoming
+            outgoing = outgoing + optInOutgoing
+        }
         return DeviceInfo(
             getDeviceId(context),
             SslHelper.certificate,
             getDeviceName(context),
             deviceType,
             PROTOCOL_VERSION,
-            PluginFactory.incomingCapabilities,
-            PluginFactory.outgoingCapabilities
+            incoming,
+            outgoing
         )
     }
 

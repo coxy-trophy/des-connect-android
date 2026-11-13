@@ -679,4 +679,56 @@ SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted
     <string name="pref_mpris_volume_control_summary">Control the connected device\'s media volume using this phone\'s hardware buttons</string>
 
     <string name="pref_notification_screen_off_key" translatable="false">pref_notification_screen_off</string>
+
+    <string name="pref_plugin_phonekey">Phone as a key</string>
+    <string name="pref_plugin_phonekey_desc">Let this desktop ask you to unlock it or approve administrator actions with your fingerprint or face</string>
+    <string name="phonekey_notifications_explanation">The notifications permission is needed to show you what the desktop asks you to approve</string>
+    <string name="phonekey_preference_key_presence" translatable="false">phonekey_presence</string>
+    <string name="phonekey_preference_key_unlock" translatable="false">phonekey_unlock</string>
+    <string name="phonekey_preference_key_approve" translatable="false">phonekey_approve</string>
+    <string name="phonekey_preference_key_fingerprint" translatable="false">phonekey_fingerprint</string>
+    <string name="phonekey_preference_key_delete" translatable="false">phonekey_delete</string>
+    <string name="phonekey_preference_title_presence">Walk-away lock</string>
+    <string name="phonekey_preference_summary_presence">Answer this desktop when it checks that the phone is still nearby, so it can lock itself after the phone has left. This never unlocks or approves anything.</string>
+    <string name="phonekey_preference_title_unlock">Unlock requests</string>
+    <string name="phonekey_preference_summary_unlock">Show requests to unlock this desktop\'s lock screen. Each one needs your fingerprint or face.</string>
+    <string name="phonekey_preference_title_approve">Administrator approvals</string>
+    <string name="phonekey_preference_summary_approve">Show requests to approve an administrator action on this desktop. Each one shows the exact action and needs your fingerprint or face.</string>
+    <string name="phonekey_preference_category_key">Key for this desktop</string>
+    <string name="phonekey_preference_no_key">No key. Start enrolment on the desktop; this phone cannot start it.</string>
+    <string name="phonekey_preference_no_biometric">No key. This phone first needs a screen lock and a fingerprint or face that Android classes as strong.</string>
+    <string name="phonekey_preference_title_delete">Delete key</string>
+    <string name="phonekey_preference_summary_delete">Remove the key from this phone and tell the desktop to forget it</string>
+    <string name="phonekey_delete_confirm_title">Delete the key for %1$s?</string>
+    <string name="phonekey_delete_confirm_text">This phone will no longer be able to unlock or approve on that desktop until it is enrolled again from the desktop.</string>
+    <string name="phonekey_delete">Delete</string>
+    <string name="phonekey_notification_enrol">%1$s asks to enrol this phone as a key</string>
+    <string name="phonekey_notification_unlock">%1$s asks to be unlocked</string>
+    <string name="phonekey_notification_approve">%1$s asks for your approval</string>
+    <string name="phonekey_headline_enrol">Enrol this phone as a key?</string>
+    <string name="phonekey_headline_unlock">Unlock this desktop?</string>
+    <string name="phonekey_headline_approve">Approve this administrator action?</string>
+    <string name="phonekey_purpose_enrol">Enrol a key</string>
+    <string name="phonekey_purpose_unlock">Unlock</string>
+    <string name="phonekey_purpose_approve">Administrator approval</string>
+    <string name="phonekey_label_desktop">Desktop</string>
+    <string name="phonekey_label_purpose">Purpose</string>
+    <string name="phonekey_label_user">User</string>
+    <string name="phonekey_label_action">Action</string>
+    <string name="phonekey_label_fingerprint">Key fingerprint</string>
+    <string name="phonekey_creating_key">Creating the key…</string>
+    <plurals name="phonekey_expires_in">
+        <item quantity="one">Expires in %1$d second</item>
+        <item quantity="other">Expires in %1$d seconds</item>
+    </plurals>
+    <string name="phonekey_approve">Approve</string>
+    <string name="phonekey_deny">Deny</string>
+    <string name="phonekey_biometric_enrol">Enrol a key for %1$s</string>
+    <string name="phonekey_biometric_unlock">Unlock %1$s</string>
+    <string name="phonekey_biometric_approve">Approve on %1$s</string>
+    <string name="phonekey_biometric_user">User: %1$s</string>
+    <string name="phonekey_no_biometric_title">This phone cannot be a key yet</string>
+    <string name="phonekey_no_biometric_text">%1$s asked to enrol this phone as a key. That needs a screen lock and a fingerprint or face that Android classes as strong. Set one up, then start enrolment again on the desktop.</string>
+    <string name="phonekey_invalidated_title">Phone key removed</string>
+    <string name="phonekey_invalidated_text">A fingerprint or face was added or the screen lock changed, so the key for %1$s can no longer be used. It was deleted. Enrol this phone again from the desktop.</string>
 </resources>

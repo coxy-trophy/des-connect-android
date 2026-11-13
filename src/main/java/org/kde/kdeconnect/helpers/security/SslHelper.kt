@@ -7,6 +7,7 @@ package org.kde.kdeconnect.helpers.security
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.util.Base64
 import android.util.Log
 import androidx.core.content.edit
@@ -21,6 +22,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.kde.kdeconnect.helpers.DeviceHelper.getDeviceId
 import org.kde.kdeconnect.helpers.RandomHelper
 import org.kde.kdeconnect.helpers.TrustedDevices
+import org.kde.kdeconnect.plugins.phonekey.PhoneKeyStore
 import org.kde.kdeconnect.helpers.security.RsaHelper.getPrivateKey
 import org.kde.kdeconnect.helpers.security.RsaHelper.getPublicKey
 import java.io.ByteArrayInputStream
@@ -133,6 +135,10 @@ object SslHelper {
 
                 invalidateUntrustedSslContext()
                 TrustedDevices.removeAllTrustedDevices(context) // Already calls invalidateTrustedSslContext()
+                // Every pairing is gone, and phone keys are bound to the certificate just replaced.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    PhoneKeyStore.deleteAll()
+                }
             } finally {
                 Locale.setDefault(initialLocale)
             }

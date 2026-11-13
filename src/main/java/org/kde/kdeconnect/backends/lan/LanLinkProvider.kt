@@ -337,7 +337,9 @@ class LanLinkProvider(private val context: Context) : BaseLinkProvider() {
                 try {
                     val secureIdentityPacket: NetworkPacket?
                     if (protocolVersion >= 8) {
-                        val myDeviceInfo = DeviceHelper.getDeviceInfo(context)
+                        // Encrypted and addressed to one device: the only identity that may
+                        // list what the user enabled for that paired device alone.
+                        val myDeviceInfo = DeviceHelper.getDeviceInfo(context, if (deviceTrusted) deviceId else null)
                         val myIdentity = myDeviceInfo.toIdentityPacket()
 
                         val writer = sslSocket.getOutputStream()

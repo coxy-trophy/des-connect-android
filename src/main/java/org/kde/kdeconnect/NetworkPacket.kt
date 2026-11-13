@@ -64,6 +64,17 @@ class NetworkPacket private constructor(
         return getStringOrNull(key) ?: defaultValue
     }
 
+    /** The value only when it is a JSON string. Numbers and booleans are not converted. */
+    fun getStrictStringOrNull(key: String): String? {
+        return primitive(key)?.takeIf { it.isString }?.content
+    }
+
+    /** The value only when it is a JSON integer that fits a Long: no strings, fractions or exponents. */
+    fun getStrictLongOrNull(key: String): Long? {
+        val value = primitive(key)?.takeIf { !it.isString } ?: return null
+        return if (STRICT_INTEGER.matches(value.content)) value.content.toLongOrNull() else null
+    }
+
     operator fun set(key: String, value: String) {
         mBody[key] = JsonPrimitive(value)
     }
@@ -273,6 +284,8 @@ class NetworkPacket private constructor(
     )
 
     companion object {
+        private val STRICT_INTEGER = Regex("-?(0|[1-9][0-9]*)")
+
         const val PACKET_TYPE_IDENTITY: String = "kdeconnect.identity"
         const val PACKET_TYPE_PAIR: String = "kdeconnect.pair"
 

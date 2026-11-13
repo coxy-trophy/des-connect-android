@@ -2,6 +2,7 @@
 
 <!--
 DES Connect modification, 2026-11-03: distinct application label.
+DES Connect modification, 2026-11-12: phone-key prompt activity and biometric permission.
 SPDX-FileCopyrightText: 2026 Coxwell Wussah
 SPDX-FileCopyrightText: 2023 Albert Vaca Cintora <albertvaka@gmail.com>
 
@@ -73,6 +74,7 @@ SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <application
         android:icon="@mipmap/ic_launcher"
@@ -193,6 +195,14 @@ SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted
             android:configChanges="orientation|screenSize"
             android:excludeFromRecents="true"
             android:label="@string/findmyphone_title"
+            android:launchMode="singleInstance" />
+
+        <activity
+            android:name="org.kde.kdeconnect.plugins.phonekey.PhoneKeyActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:label="@string/pref_plugin_phonekey"
             android:launchMode="singleInstance" />
 
         <receiver android:name="org.kde.kdeconnect.plugins.findmyphone.FindMyPhoneReceiver"

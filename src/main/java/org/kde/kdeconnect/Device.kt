@@ -1,6 +1,7 @@
 /*
  * DES Connect modification, 2026-11-03: initialize and refresh peer capability filtering.
  * DES Connect modification, 2026-11-04: serialize packet dispatch with plugin lifecycle changes.
+ * DES Connect modification, 2026-11-12: reconnect when an opt-in advertised plugin is toggled.
  * SPDX-FileCopyrightText: 2026 Coxwell Wussah
  * SPDX-FileCopyrightText: 2025 Albert Vaca Cintora <albertvaka@gmail.com>
  *
@@ -673,8 +674,16 @@ class Device : PacketReceiver {
     }
 
     fun setPluginEnabled(pluginKey: String, value: Boolean) {
+        val changed = isPluginEnabled(pluginKey) != value
         TrustedDevices.getDeviceSettings(context, deviceId).edit { putBoolean(pluginKey, value) }
         reloadPluginsFromSettings()
+        if (changed && isPaired && isReachable && PluginFactory.getPluginInfo(pluginKey).advertiseOnlyWhenEnabled) {
+            // What we advertise to this device just changed, and capabilities are only
+            // exchanged in the identity at the start of a link: start a new one.
+            Log.i("Device", "$pluginKey changes our identity for ${deviceInfo.name}, reconnecting")
+            disconnect()
+            BackgroundService.ForceRefreshConnections(context)
+        }
     }
 
     fun isPluginEnabled(pluginKey: String): Boolean {

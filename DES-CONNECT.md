@@ -60,3 +60,17 @@ release, or streaming budget. Memory profiling and reduction remain future work.
 
 Final debug APK SHA-256:
 `dbcaebd4b8489fa9e65da2a098c56c34b06970346d47f3bf78e8952569fc17e7`.
+
+## Phone as a key (12 November 2026)
+
+`plugins/phonekey` adds the phone side of `des.phonekey.v1`: walk-away presence
+replies, lock-screen unlock requests and administrator approvals for a paired
+DES desktop, each signed in the Android Keystore behind a strong biometric. The
+wire protocol and threat model are specified in the DesOS tree
+(`desos/phonekey/README.md`); interaction ownership is in UX-CONTRACT.md. The
+plugin needs Android 9 or later and is off by default.
+
+**Not validated on any device.** Key generation, StrongBox fallback, the
+biometric prompt, key invalidation, notification behaviour and presence replies
+under Doze have never run on a phone or an emulator. Only the protocol code
+(message encoding, validation, replies) is covered by JVM unit tests.

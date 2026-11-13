@@ -65,3 +65,28 @@ fragment from being restored into a volume-only slot. Hardware volume-key routin
 looks up fragments by stable item ID and ignores invalid positions. The adapter
 regression verifies retained IDs, exclusion of unavailable IDs and actual
 volume-key callback delivery through the framework's fragment map.
+
+## Phone as a key (2026-11-12)
+
+PhoneKeyPlugin implements `des.phonekey.v1` as specified in the DesOS tree
+(`desos/phonekey/README.md`, sections 3 and 4). It is disabled by default for
+every device. Its packet type is absent from the broadcast identity and from
+identities sent to unpaired devices; DeviceHelper adds it only to the encrypted
+identity for a paired device on which the user enabled the plugin. Toggling it
+closes that device's link and refreshes connections, because capabilities are
+exchanged only when a link starts.
+
+| Capability | Canonical owner | Contract |
+|---|---|---|
+| Per-desktop switches | PhoneKeySettingsFragment, per-device preferences | Walk-away lock, unlock requests and administrator approvals are separate switches, all off by default. No switch remembers an approval |
+| Key | PhoneKeyStore (Android Keystore) | One non-exportable P-256 key per desktop; every use needs a Class 3 biometric; invalidated by new biometric enrolment; deleted on revoke, unpair, invalidation or user request |
+| Request prompt | PhoneKeyPlugin notification, then PhoneKeyActivity | One request on screen at a time. Desktop name, purpose, user and action are shown exactly as validated; the notification has no approve action |
+| Approval | Android BiometricPrompt with the signature as CryptoObject | The signed message is built from the displayed request object. Cancelling or failing the biometric answers denied |
+| Expiry | PhoneKeyPlugin timer, desktop `cancel` | Notification, prompt and biometric sheet are dismissed and nothing is sent |
+| Presence | PhoneKeyPlugin packet handler | Answered from the background service without any UI, only while the walk-away switch is on |
+| Enrolment | Desktop only | The phone has no control that starts enrolment. The new key's fingerprint is shown before approval and stays on the plugin's settings page |
+
+Validation, the signed-message encoder and the one-request slot are in
+PhoneKeyProtocol, which has no Android dependency and is tested on the JVM
+against the desktop's vectors. Strings are English resources in
+`values/strings.xml`; no translation was added or changed.

@@ -17,6 +17,20 @@ import java.security.cert.Certificate
 class NetworkPacketTest {
 
     @Test
+    fun strictAccessorsDoNotConvertBetweenJsonTypes() {
+        val np = unserialize(
+            """{"id":1,"type":"test","body":{"s":"text","n":"12","i":12,"neg":-3,"f":1.0,"e":1e3,"b":true,"z":null,"o":{},"big":9223372036854775808,"max":9223372036854775807}}"""
+        )
+        Assert.assertEquals("text", np.getStrictStringOrNull("s"))
+        Assert.assertEquals("12", np.getStrictStringOrNull("n"))
+        for (key in listOf("i", "f", "b", "z", "o", "missing")) Assert.assertNull(key, np.getStrictStringOrNull(key))
+        Assert.assertEquals(12L, np.getStrictLongOrNull("i"))
+        Assert.assertEquals(-3L, np.getStrictLongOrNull("neg"))
+        Assert.assertEquals(Long.MAX_VALUE, np.getStrictLongOrNull("max"))
+        for (key in listOf("s", "n", "f", "e", "b", "z", "o", "big", "missing")) Assert.assertNull(key, np.getStrictLongOrNull(key))
+    }
+
+    @Test
     fun testNetworkPacket() {
         val np = NetworkPacket("com.test")
 

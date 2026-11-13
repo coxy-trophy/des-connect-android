@@ -133,6 +133,14 @@ abstract class Plugin {
     open val isEnabledByDefault: Boolean = true
 
     /**
+     * Return true if this plugin's packet types must be listed in our identity only for
+     * paired devices on which the user enabled the plugin, instead of for everybody.
+     * The peer then cannot tell the plugin exists until the user switched it on for it.
+     * Such plugins should not be [isEnabledByDefault].
+     */
+    open val advertiseOnlyWhenEnabled: Boolean = false
+
+    /**
      * Return true if this plugin needs a specific UI settings.
      */
     open val hasSettings: Boolean = false

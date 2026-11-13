@@ -6,6 +6,7 @@
 package org.kde.kdeconnect.plugins
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import org.kde.kdeconnect.Device
 
@@ -29,10 +30,23 @@ object PluginFactory {
 
     val availablePlugins: Set<String>
         get() = pluginInfo.keys
+    /** What we tell every device we can receive. Opt-in plugins are not in here, see [optInCapabilities]. */
     val incomingCapabilities: Set<String>
-        get() = pluginInfo.values.flatMap { plugin -> plugin.supportedPacketTypes }.toSet()
+        get() = pluginInfo.values.filterNot { it.advertiseOnlyWhenEnabled }.flatMap { plugin -> plugin.supportedPacketTypes }.toSet()
     val outgoingCapabilities: Set<String>
-        get() = pluginInfo.values.flatMap { plugin -> plugin.outgoingPacketTypes }.toSet()
+        get() = pluginInfo.values.filterNot { it.advertiseOnlyWhenEnabled }.flatMap { plugin -> plugin.outgoingPacketTypes }.toSet()
+
+    /**
+     * The (incoming, outgoing) packet types of the plugins that are only advertised to
+     * devices they are enabled for ([Plugin.advertiseOnlyWhenEnabled]), given a function
+     * that tells whether the plugin with that key is enabled for the device in question.
+     */
+    fun optInCapabilities(isEnabled: (pluginKey: String, info: PluginInfo) -> Boolean): Pair<Set<String>, Set<String>> {
+        val enabled = pluginInfo.filter { (key, info) ->
+            info.advertiseOnlyWhenEnabled && Build.VERSION.SDK_INT >= info.minSdk && isEnabled(key, info)
+        }.values
+        return Pair(enabled.flatMap { it.supportedPacketTypes }.toSet(), enabled.flatMap { it.outgoingPacketTypes }.toSet())
+    }
 
     fun getPluginInfo(pluginKey: String): PluginInfo = pluginInfo[pluginKey]!!
 
@@ -71,12 +85,15 @@ object PluginFactory {
         val hasSettings: Boolean,
         val listenToUnpaired: Boolean,
         val keepAliveWhenUnreachable: Boolean,
+        val advertiseOnlyWhenEnabled: Boolean,
+        val minSdk: Int,
         supportedPacketTypes: Array<String>,
         outgoingPacketTypes: Array<String>,
         val instantiableClass: Class<out Plugin>,
     ) {
         internal constructor(p: Plugin) : this(p.displayName, p.description,
             p.isEnabledByDefault, p.hasSettings, p.listenToUnpairedDevices, p.keepAliveWhenUnreachable,
+            p.advertiseOnlyWhenEnabled, p.minSdk,
             p.supportedPacketTypes, p.outgoingPacketTypes, p.javaClass)
 
         val supportedPacketTypes: Set<String> = supportedPacketTypes.toSet()
